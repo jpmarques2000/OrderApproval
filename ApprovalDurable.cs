@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -20,12 +21,21 @@ namespace OrderApproval_Durable
             var outputs = new List<string>();
 
             double id = 1;
+            bool paid = true;
             List<double> products = new List<double>() { 5.99, 15.99, 550.99, 14.99, 18.50};
 
-            outputs.Add(await context.CallActivityAsync<string>("TotalValue", products));
-            outputs.Add(await context.CallActivityAsync<string>("VerifyOrder", id));
-            outputs.Add(await context.CallActivityAsync<string>("ApproveOrder", id));
+            bool approved = await context.CallActivityAsync<bool>("VerifyOrder", paid);
 
+            if(approved)
+            {
+                outputs.Add(await context.CallActivityAsync<string>("TotalValue", products));
+
+                outputs.Add(await context.CallActivityAsync<string>("ApproveOrder", id));
+            }
+            else
+            {
+                outputs.Add("Pedido não foi aprovado!");
+            }
             return outputs;
         }
 
@@ -42,17 +52,27 @@ namespace OrderApproval_Durable
         }
 
         [FunctionName("VerifyOrder")]
-        public static string VerifyOrder([ActivityTrigger] int orderId, ILogger log)
+        public static bool VerifyOrder([ActivityTrigger] bool paid, ILogger log)
         {
-            log.LogInformation("Verificando pedido {orderId}: ", orderId);
-            return $"Pedido Id: {orderId} verificado com sucesso!";
+            log.LogInformation("Verificando se o pedido foi pago!");
+
+            if (paid)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         [FunctionName("ApproveOrder")]
         public static string ApproveOrder([ActivityTrigger] int orderId, ILogger log)
         {
+            var date = DateTime.UtcNow.ToLocalTime();
+
             log.LogInformation("Aprovando pedido {orderId}.", orderId);
-            return $"Pedido com Id {orderId} foi aprovado com sucesso!";
+            return $"Pedido com Id {orderId} foi aprovado com sucesso {date}!";
         }
 
         [FunctionName("ApprovalDurable_HttpStart")]
@@ -61,7 +81,6 @@ namespace OrderApproval_Durable
             [DurableClient] IDurableOrchestrationClient starter,
             ILogger log)
         {
-            // Function input comes from the request content.
             string instanceId = await starter.StartNewAsync("ApprovalDurable", null);
 
             log.LogInformation("Started orchestration with ID = '{instanceId}'.", instanceId);
