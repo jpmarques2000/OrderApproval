@@ -3,20 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection.Metadata;
 using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
 public class MyParameters
 {
-    public string OrderId { get; set; }
-    public List<double> Products { get; set; }
-    public bool paid { get; set; }
+    public int ServiceId { get; set; }
+    public string VehicleName { get; set; }
+    public decimal ServicePrice { get; set; }
+    public string Email { get; set; }
+    public bool Paid { get; set; }
 }
 
 namespace OrderApproval_Durable
@@ -30,7 +30,6 @@ namespace OrderApproval_Durable
             var outputs = new List<string>();
 
             var inputs = context.GetInput<MyParameters>();
-            //List<double> products = new List<double>() { 5.99, 15.99, 550.99, 14.99, 18.50 };
 
             bool approved = await context.CallActivityAsync<bool>("VerifyOrder", inputs);
 
@@ -50,14 +49,14 @@ namespace OrderApproval_Durable
         [FunctionName("TotalValue")]
         public static string TotalValue([ActivityTrigger] MyParameters inputs, ILogger log)
         {
-            List<double> products = inputs.Products;
-            double total = 0;
-            for(int i = 0; i < inputs.Products.Count(); i++)
-            {
-                total = total + inputs.Products[i];
-            }
+            //List<double> products = inputs.ServicePrice;
+            //double total = 0;
+            //for(int i = 0; i < inputs.Products.Count(); i++)
+            //{
+            //    total = total + inputs.Products[i];
+            //}
             log.LogInformation("Somando total do pedido.");
-            return $"Valor total do pedido: R${Math.Round(total,2)}!";
+            return $"Valor total do pedido: R${Math.Round(inputs.ServicePrice,2)}!";
         }
 
         [FunctionName("VerifyOrder")]
@@ -65,7 +64,7 @@ namespace OrderApproval_Durable
         {
             log.LogInformation("Verificando se o pedido foi pago!");
 
-            if (inputs.paid)
+            if (inputs.Paid)
             {
                 return true;
             }
@@ -80,8 +79,11 @@ namespace OrderApproval_Durable
         {
             var date = DateTime.UtcNow.ToLocalTime();
 
-            log.LogInformation("Aprovando pedido {orderId}.", inputs.OrderId);
-            return $"Pedido com Id {inputs.OrderId} foi aprovado com sucesso {date}!";
+            log.LogInformation("Aprovando pedido {orderId}.", inputs.ServiceId);
+
+            string messageResult = $"Pedido com Id {inputs.ServiceId}, do veículo {inputs.VehicleName} foi aprovado com sucesso {date}!";
+
+            return messageResult;
         }
 
         [FunctionName("HttpStart_OrderApproval")]
