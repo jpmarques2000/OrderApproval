@@ -13,7 +13,7 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-public class MyParameters
+public class Order
 {
     public int ServiceId { get; set; }
     public string VehicleName { get; set; }
@@ -32,7 +32,7 @@ namespace OrderApproval_Durable
         {
             var outputs = new List<string>();
 
-            var inputs = context.GetInput<MyParameters>();
+            var inputs = context.GetInput<Order>();
 
             bool approved = await context.CallActivityAsync<bool>("VerifyOrder", inputs);
 
@@ -50,14 +50,14 @@ namespace OrderApproval_Durable
         }
 
         [FunctionName("TotalValue")]
-        public static string TotalValue([ActivityTrigger] MyParameters inputs, ILogger log)
+        public static string TotalValue([ActivityTrigger] Order inputs, ILogger log)
         {
             log.LogInformation("Somando total do pedido.");
             return $"Valor total do pedido: R${Math.Round(inputs.ServicePrice,2)}!";
         }
 
         [FunctionName("VerifyOrder")]
-        public static bool VerifyOrder([ActivityTrigger] MyParameters inputs, ILogger log)
+        public static bool VerifyOrder([ActivityTrigger] Order inputs, ILogger log)
         {
             log.LogInformation("Verificando se o pedido foi pago!");
 
@@ -72,7 +72,7 @@ namespace OrderApproval_Durable
         }
 
         [FunctionName("ApproveOrder")]
-        public static string ApproveOrder([ActivityTrigger] MyParameters inputs, ILogger log)
+        public static string ApproveOrder([ActivityTrigger] Order inputs, ILogger log)
         {
             var date = DateTime.UtcNow.ToLocalTime();
 
@@ -99,7 +99,7 @@ namespace OrderApproval_Durable
                 };
             }
 
-            MyParameters input = JsonConvert.DeserializeObject<MyParameters>(requestBody);
+            Order input = JsonConvert.DeserializeObject<Order>(requestBody);
 
             string instanceId = await client.StartNewAsync("ApprovalDurable", input);
 
