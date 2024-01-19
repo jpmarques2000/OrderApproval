@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.DurableTask;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -49,12 +52,6 @@ namespace OrderApproval_Durable
         [FunctionName("TotalValue")]
         public static string TotalValue([ActivityTrigger] MyParameters inputs, ILogger log)
         {
-            //List<double> products = inputs.ServicePrice;
-            //double total = 0;
-            //for(int i = 0; i < inputs.Products.Count(); i++)
-            //{
-            //    total = total + inputs.Products[i];
-            //}
             log.LogInformation("Somando total do pedido.");
             return $"Valor total do pedido: R${Math.Round(inputs.ServicePrice,2)}!";
         }
@@ -110,6 +107,5 @@ namespace OrderApproval_Durable
 
             return client.CreateCheckStatusResponse(req, instanceId);
         }
-
     }
 }
