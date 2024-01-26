@@ -14,3 +14,5 @@ Exemplo de body:
     "ServicePrice": 225.99,
     "paid": true
 }
+
+Após isso a function ira devolver um "statusQueryGetUri", após isso basta executar um GET no Postman da url devolvida.
