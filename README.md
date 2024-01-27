@@ -15,4 +15,4 @@ Exemplo de body:
     "paid": true
 }
 
-Após isso a function ira devolver um "statusQueryGetUri", após isso basta executar um GET no Postman da url devolvida.
+Após isso a function ira devolver um "statusQueryGetUri", basta executar um GET no Postman da url devolvida.
