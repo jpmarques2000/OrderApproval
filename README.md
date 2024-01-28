@@ -1,3 +1,9 @@
+- João Paulo Marques          RM 351763
+- Isabella Kratchei       RM 351575
+- Isaias Silva            RM 352364
+- Ricardo Perdigão        RM 351514
+- Michel Balarin Claro    RM 351165
+
 Repositório gerado para manter o código fonte da azure function do projeto tech challenge fase 2.
 
 Azure function está publicada no Azure.
